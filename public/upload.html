@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Upload Form</title>
+</head>
+<body>
+    <h1>Upload an Audio File for Transcoding</h1>
+    <form action="http://localhost:8080/upload" method="post" enctype="multipart/form-data">
+        <label for="file">Select an audio file to upload (mp3, wav, etc.):</label><br>
+        <input type="file" name="files" accept="audio/*" multiple required><br><br>
+        <input type="submit" value="Upload and Transcode">
+    </form>
+</body>
+</html>
