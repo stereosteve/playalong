@@ -1,6 +1,8 @@
 module jamfu
 
-go 1.21.4
+go 1.22
+
+toolchain go1.23.2
 
 require (
 	github.com/a-h/templ v0.2.778
@@ -15,6 +17,7 @@ require (
 	github.com/oklog/ulid/v2 v2.1.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
+	go.etcd.io/bbolt v1.3.11 // indirect
 	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/sys v0.23.0 // indirect

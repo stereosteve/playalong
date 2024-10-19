@@ -1,10 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"io"
 	"jamfu/views"
+	"log"
 	"mime/multipart"
-	"net/http"
 	"os"
 	"os/exec"
 	"path"
@@ -15,9 +16,33 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/oklog/ulid/v2"
+	"go.etcd.io/bbolt"
+)
+
+var (
+	db              *bbolt.DB
+	PlayAlongBucket = []byte("PlayAlong")
 )
 
 func main() {
+	{
+		var err error
+		db, err = bbolt.Open("my.db", 0600, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		db.Update(func(tx *bbolt.Tx) error {
+			_, err := tx.CreateBucketIfNotExists(PlayAlongBucket)
+			if err != nil {
+				log.Fatal(err)
+			}
+			return nil
+		})
+
+		defer db.Close()
+	}
+
 	// Initialize Echo server
 	e := echo.New()
 	e.HideBanner = true
@@ -33,6 +58,8 @@ func main() {
 		return Render(c, 200, views.Create())
 	})
 	e.POST("/upload", uploadAndTranscode)
+
+	e.GET("/song/:id", serveSong)
 
 	e.Static("/", "public")
 
@@ -53,8 +80,19 @@ func Render(ctx echo.Context, statusCode int, t templ.Component) error {
 }
 
 func HomeHandler(c echo.Context) error {
-	// todo: list playAlongs
-	return Render(c, http.StatusOK, views.Home("asdf 123 111"))
+	songs, err := listPlayAlongs()
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, songs)
+}
+
+func serveSong(c echo.Context) error {
+	song, err := getPlayAlong(c.Param("id"))
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, song)
 }
 
 type PlayAlong struct {
@@ -114,7 +152,9 @@ func uploadAndTranscode(c echo.Context) error {
 		})
 	}
 
-	// todo: save playAlong
+	if err := savePlayAlong(playAlong); err != nil {
+		return err
+	}
 	return c.JSON(200, playAlong)
 }
 
@@ -138,4 +178,46 @@ func copyUploadToTempFile(file *multipart.FileHeader) (*os.File, error) {
 	temp.Seek(0, 0)
 
 	return temp, nil
+}
+
+//
+// DB STUFF
+//
+
+func savePlayAlong(playAlong *PlayAlong) error {
+	return db.Update(func(tx *bbolt.Tx) error {
+		b := tx.Bucket(PlayAlongBucket)
+		j, err := json.Marshal(playAlong)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(playAlong.ID), j)
+	})
+}
+
+func listPlayAlongs() ([]*PlayAlong, error) {
+	all := []*PlayAlong{}
+	err := db.View(func(tx *bbolt.Tx) error {
+		b := tx.Bucket(PlayAlongBucket)
+		return b.ForEach(func(k, v []byte) error {
+			var p *PlayAlong
+			err := json.Unmarshal(v, &p)
+			if err != nil {
+				return err
+			}
+			all = append(all, p)
+			return nil
+		})
+	})
+	return all, err
+}
+
+func getPlayAlong(id string) (*PlayAlong, error) {
+	var p *PlayAlong
+	err := db.View(func(tx *bbolt.Tx) error {
+		b := tx.Bucket(PlayAlongBucket)
+		v := b.Get([]byte(id))
+		return json.Unmarshal(v, &p)
+	})
+	return p, err
 }
