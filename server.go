@@ -1,10 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"io"
+	"jamfu/repo"
 	"jamfu/views"
-	"log"
 	"mime/multipart"
 	"os"
 	"os/exec"
@@ -16,32 +15,12 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/oklog/ulid/v2"
-	"go.etcd.io/bbolt"
-)
-
-var (
-	db              *bbolt.DB
-	PlayAlongBucket = []byte("PlayAlong")
 )
 
 func main() {
-	{
-		var err error
-		db, err = bbolt.Open("my.db", 0600, nil)
-		if err != nil {
-			log.Fatal(err)
-		}
 
-		db.Update(func(tx *bbolt.Tx) error {
-			_, err := tx.CreateBucketIfNotExists(PlayAlongBucket)
-			if err != nil {
-				log.Fatal(err)
-			}
-			return nil
-		})
-
-		defer db.Close()
-	}
+	repo.Dial()
+	// todo: repo.Close() on signal
 
 	// Initialize Echo server
 	e := echo.New()
@@ -80,38 +59,25 @@ func Render(ctx echo.Context, statusCode int, t templ.Component) error {
 }
 
 func HomeHandler(c echo.Context) error {
-	songs, err := listPlayAlongs()
+	songs, err := repo.ListSongs()
 	if err != nil {
 		return err
 	}
-	return c.JSON(200, songs)
+	return Render(c, 200, views.Home(songs))
 }
 
 func serveSong(c echo.Context) error {
-	song, err := getPlayAlong(c.Param("id"))
+	song, err := repo.GetSong(c.Param("id"))
 	if err != nil {
 		return err
 	}
-	return c.JSON(200, song)
-}
-
-type PlayAlong struct {
-	ID    string
-	Title string
-	Genre string
-	Key   string
-	BPM   string
-	Stems []StemFile
-}
-type StemFile struct {
-	Name string
-	Path string
+	return Render(c, 200, views.Song(song))
 }
 
 func uploadAndTranscode(c echo.Context) error {
 
 	id := ulid.Make().String()
-	playAlong := &PlayAlong{
+	song := &repo.Song{
 		ID:    id,
 		Title: c.FormValue("title"),
 		Genre: c.FormValue("genre"),
@@ -146,16 +112,17 @@ func uploadAndTranscode(c echo.Context) error {
 			return err
 		}
 
-		playAlong.Stems = append(playAlong.Stems, StemFile{
+		song.Stems = append(song.Stems, repo.StemFile{
 			Name: file.Filename,
-			Path: path.Join("uploads", id, stemName+".mp3"),
+			Path: path.Join("/uploads", id, stemName+".mp3"),
 		})
 	}
 
-	if err := savePlayAlong(playAlong); err != nil {
+	if err := repo.SaveSong(song); err != nil {
 		return err
 	}
-	return c.JSON(200, playAlong)
+	// return c.JSON(200, song)
+	return c.Redirect(302, "/song/"+song.ID)
 }
 
 func copyUploadToTempFile(file *multipart.FileHeader) (*os.File, error) {
@@ -178,46 +145,4 @@ func copyUploadToTempFile(file *multipart.FileHeader) (*os.File, error) {
 	temp.Seek(0, 0)
 
 	return temp, nil
-}
-
-//
-// DB STUFF
-//
-
-func savePlayAlong(playAlong *PlayAlong) error {
-	return db.Update(func(tx *bbolt.Tx) error {
-		b := tx.Bucket(PlayAlongBucket)
-		j, err := json.Marshal(playAlong)
-		if err != nil {
-			return err
-		}
-		return b.Put([]byte(playAlong.ID), j)
-	})
-}
-
-func listPlayAlongs() ([]*PlayAlong, error) {
-	all := []*PlayAlong{}
-	err := db.View(func(tx *bbolt.Tx) error {
-		b := tx.Bucket(PlayAlongBucket)
-		return b.ForEach(func(k, v []byte) error {
-			var p *PlayAlong
-			err := json.Unmarshal(v, &p)
-			if err != nil {
-				return err
-			}
-			all = append(all, p)
-			return nil
-		})
-	})
-	return all, err
-}
-
-func getPlayAlong(id string) (*PlayAlong, error) {
-	var p *PlayAlong
-	err := db.View(func(tx *bbolt.Tx) error {
-		b := tx.Bucket(PlayAlongBucket)
-		v := b.Get([]byte(id))
-		return json.Unmarshal(v, &p)
-	})
-	return p, err
 }

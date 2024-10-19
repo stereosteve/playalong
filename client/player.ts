@@ -1,4 +1,4 @@
-import Multitrack from "wavesurfer-multitrack";
+import Multitrack from "npm:wavesurfer-multitrack";
 
 // Multitrack example
 

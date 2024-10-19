@@ -1,7 +1,17 @@
 package views
 
-templ Home(name string) {
+import "jamfu/repo"
+
+templ Home(songs []*repo.Song) {
 	@BaseLayout() {
-		<div>Hello { name } yo great</div>
+		<div>
+			<h1>Songs</h1>
+			for _, song := range songs {
+				<a href={ templ.URL("/song/" + song.ID) } style="display: block; padding: 10px; margin: 10px;">
+					<b>{ song.Title }</b>
+					<em>{ song.Genre }</em>
+				</a>
+			}
+		</div>
 	}
 }

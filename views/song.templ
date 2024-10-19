@@ -1,0 +1,26 @@
+package views
+
+import "jamfu/repo"
+
+templ Song(song *repo.Song) {
+	@BaseLayout() {
+		<div>
+			<h1>{ song.Title }</h1>
+			<em>{ song.Genre }</em>
+			for _, stem := range song.Stems {
+				<div>
+					<audio src={ stem.Path } controls></audio>
+				</div>
+			}
+			<em>todo: load up multiwave and setup with stems</em>
+			<!---->
+			<!-- pass data to client -->
+			<!---->
+			@templ.JSONScript("SongData", song)
+			<script type="text/javascript">
+			const data = JSON.parse(document.getElementById('SongData').textContent);
+			console.log('song', data)
+			</script>
+		</div>
+	}
+}
