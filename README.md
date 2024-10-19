@@ -4,6 +4,13 @@ To install dependencies:
 
 ```bash
 bun install
+
+go install github.com/a-h/templ/cmd/templ@latest
+go install github.com/bokwoon95/wgo@latest
+```
+
+```
+wgo -file=.go -file=.templ -xfile=_templ.go templ generate :: go run main.go
 ```
 
 To run:

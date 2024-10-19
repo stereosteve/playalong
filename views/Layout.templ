@@ -1,0 +1,24 @@
+package views
+
+templ BaseLayout() {
+	<!DOCTYPE html>
+	<html lang="en" class="h-full dark">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<style>
+        body {
+          font-family: 'Courier New', Courier, monospace;
+          background: #efefef;
+        }
+      </style>
+		</head>
+		<body>
+			<div style="padding: 10px; display: flex; gap: 5px;">
+				<a href="/">home</a>
+				<a href="/create">create</a>
+			</div>
+			{ children... }
+		</body>
+	</html>
+}

@@ -2,3 +2,6 @@ tmp
 node_modules
 public/client
 public/uploads
+
+# might check these in later... but for now..
+views/*.go

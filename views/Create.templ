@@ -1,0 +1,26 @@
+package views
+
+templ Create() {
+	@BaseLayout() {
+		<h2>Upload an Audio File for Transcoding</h2>
+		<form action="http://localhost:8080/upload" method="post" enctype="multipart/form-data">
+			<div class="form">
+				<input name="title" placeholder="Song Title" required/>
+				<input name="genre" placeholder="Genre" required/>
+				<input name="key" placeholder="Key"/>
+				<input name="bpm" placeholder="BPM"/>
+				<input type="file" name="files" accept="audio/*" multiple required/>
+				<input type="submit" value="Upload and Transcode"/>
+			</div>
+		</form>
+		<style>
+      .form input {
+        display: block;
+        margin: 10px;
+        padding: 10px;
+        border-radius: 5px;
+        border-width: 1px;
+      }
+    </style>
+	}
+}
