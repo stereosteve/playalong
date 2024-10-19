@@ -1,20 +1,25 @@
 package main
 
 import (
+	"crypto/tls"
 	"io"
 	"jamfu/repo"
 	"jamfu/views"
 	"mime/multipart"
+	"net/http"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/oklog/ulid/v2"
+	"golang.org/x/crypto/acme"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 func main() {
@@ -22,28 +27,57 @@ func main() {
 	repo.Dial()
 	// todo: repo.Close() on signal
 
+	// Start server
+	e := setupEcho()
+
+	isProd := false
+	if isProd {
+		// https://echo.labstack.com/docs/cookbook/auto-tls
+		e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
+		autoTLSManager := autocert.Manager{
+			Prompt: autocert.AcceptTOS,
+			Cache:  autocert.DirCache("/var/www/.cache"),
+			//HostPolicy: autocert.HostWhitelist("<DOMAIN>"),
+		}
+		s := http.Server{
+			Addr:    ":443",
+			Handler: e,
+			TLSConfig: &tls.Config{
+				GetCertificate: autoTLSManager.GetCertificate,
+				NextProtos:     []string{acme.ALPNProto},
+			},
+			ReadTimeout: 30 * time.Second,
+		}
+		if err := s.ListenAndServeTLS("", ""); err != http.ErrServerClosed {
+			e.Logger.Fatal(err)
+		}
+	} else {
+		e.Logger.Fatal(e.Start(":8080"))
+	}
+}
+
+func setupEcho() *echo.Echo {
 	// Initialize Echo server
 	e := echo.New()
 	e.HideBanner = true
 	e.Debug = true
 
 	// Middleware
-	// e.Use(middleware.Logger())
+	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	// Upload and transcode route
 	e.GET("/", HomeHandler)
 	e.GET("/create", func(c echo.Context) error {
 		return Render(c, 200, views.Create())
 	})
 	e.POST("/upload", uploadAndTranscode)
-
 	e.GET("/song/:id", serveSong)
-
+	e.GET("/status", func(ctx echo.Context) error {
+		return ctx.String(200, "OK")
+	})
 	e.Static("/", "public")
 
-	// Start server
-	e.Logger.Fatal(e.Start(":8080"))
+	return e
 }
 
 // This custom Render replaces Echo's echo.Context.Render() with templ's templ.Component.Render().
