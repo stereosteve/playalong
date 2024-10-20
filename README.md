@@ -11,6 +11,8 @@ go install github.com/bokwoon95/wgo@latest
 
 ```
 wgo -file=.go -file=.templ -xfile=_templ.go templ generate :: go run main.go
+
+wgo -file=.ts bun build.ts
 ```
 
 To run:

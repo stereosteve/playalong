@@ -7,20 +7,12 @@ templ Song(song *repo.Song) {
 		<div>
 			<h1>{ song.Title }</h1>
 			<em>{ song.Genre }</em>
-			for _, stem := range song.Stems {
-				<div>
-					<audio src={ stem.Path } controls></audio>
-				</div>
-			}
-			<em>todo: load up multiwave and setup with stems</em>
-			<!---->
+			<div id="container"></div>
+			<button id="play">Play</button>
+			<div id="mixer" style="padding: 10px"></div>
 			<!-- pass data to client -->
-			<!---->
 			@templ.JSONScript("SongData", song)
-			<script type="text/javascript">
-			const data = JSON.parse(document.getElementById('SongData').textContent);
-			console.log('song', data)
-			</script>
+			<script src="/client/player.js"></script>
 		</div>
 	}
 }

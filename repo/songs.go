@@ -7,17 +7,17 @@ import (
 )
 
 type Song struct {
-	ID    string
-	Title string
-	Genre string
-	Key   string
-	BPM   string
-	Stems []StemFile
+	ID    string     `json:"id"`
+	Title string     `json:"title"`
+	Genre string     `json:"genre"`
+	Key   string     `json:"key"`
+	BPM   string     `json:"bpm"`
+	Stems []StemFile `json:"stems"`
 }
 
 type StemFile struct {
-	Name string
-	Path string
+	Name string `json:"name"`
+	Path string `json:"path"`
 }
 
 //
