@@ -2,6 +2,9 @@ package main
 
 import (
 	"crypto/tls"
+	"embed"
+	"errors"
+	"fmt"
 	"io"
 	"jamfu/repo"
 	"jamfu/views"
@@ -30,14 +33,23 @@ func main() {
 	// Start server
 	e := setupEcho()
 
-	isProd := false
-	if isProd {
+	hostName := os.Getenv("HOST")
+	if hostName != "" {
 		// https://echo.labstack.com/docs/cookbook/auto-tls
-		e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
+		// start 80 to 443 redirect server
+		go func() {
+			e2 := echo.New()
+			e2.HideBanner = true
+			e2.Pre(middleware.HTTPSRedirect())
+			e2.Start(":80")
+		}()
+
+		cacheDir := ".cert_cache"
+		e.AutoTLSManager.Cache = autocert.DirCache(cacheDir)
 		autoTLSManager := autocert.Manager{
-			Prompt: autocert.AcceptTOS,
-			Cache:  autocert.DirCache("/var/www/.cache"),
-			//HostPolicy: autocert.HostWhitelist("<DOMAIN>"),
+			Prompt:     autocert.AcceptTOS,
+			Cache:      autocert.DirCache(cacheDir),
+			HostPolicy: autocert.HostWhitelist(hostName),
 		}
 		s := http.Server{
 			Addr:    ":443",
@@ -52,9 +64,16 @@ func main() {
 			e.Logger.Fatal(err)
 		}
 	} else {
-		e.Logger.Fatal(e.Start(":8080"))
+		port := os.Getenv("PORT")
+		if port == "" {
+			port = "8080"
+		}
+		e.Logger.Fatal(e.Start(":" + port))
 	}
 }
+
+//go:embed client
+var clientAssets embed.FS
 
 func setupEcho() *echo.Echo {
 	// Initialize Echo server
@@ -75,7 +94,19 @@ func setupEcho() *echo.Echo {
 	e.GET("/status", func(ctx echo.Context) error {
 		return ctx.String(200, "OK")
 	})
-	e.Static("/", "public")
+
+	if _, err := os.Stat("client/favicon.ico"); errors.Is(err, os.ErrNotExist) {
+		fmt.Println("serving embedded assets")
+		e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
+			Root:       "client",
+			Filesystem: http.FS(clientAssets),
+		}))
+	} else {
+		fmt.Println("serving assets from client dir")
+		e.Static("/", "client")
+	}
+
+	e.Static("/uploads", "public/uploads")
 
 	return e
 }
@@ -109,7 +140,6 @@ func serveSong(c echo.Context) error {
 }
 
 func uploadAndTranscode(c echo.Context) error {
-
 	id := ulid.Make().String()
 	song := &repo.Song{
 		ID:    id,

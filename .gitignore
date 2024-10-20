@@ -2,9 +2,10 @@
 jamfu
 tmp
 node_modules
-public/client
+client/*.js
 public/uploads
 *.db
+build
 
 # might check these in later... but for now..
 views/*.go

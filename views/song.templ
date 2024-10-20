@@ -12,7 +12,7 @@ templ Song(song *repo.Song) {
 			<div id="mixer" style="padding: 10px"></div>
 			<!-- pass data to client -->
 			@templ.JSONScript("SongData", song)
-			<script src="/client/player.js"></script>
+			<script src="/player.js"></script>
 		</div>
 		<style>
 		h1 {
