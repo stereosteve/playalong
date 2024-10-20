@@ -4,14 +4,35 @@ import "jamfu/repo"
 
 templ Home(songs []*repo.Song) {
 	@BaseLayout() {
-		<div>
-			<h1>Songs</h1>
+		<div class="songList">
 			for _, song := range songs {
-				<a href={ templ.URL("/song/" + song.ID) } style="display: block; padding: 10px; margin: 10px;">
-					<b>{ song.Title }</b>
+				<a href={ templ.URL("/song/" + song.ID) }>
+					<h3>{ song.Title }</h3>
 					<em>{ song.Genre }</em>
 				</a>
 			}
 		</div>
+		<style>
+		.songList {
+			max-width: 500px;
+			margin: 0 auto;
+		}
+		.songList a {
+			display: block;
+			margin: 15px;
+			padding: 12px;
+			text-decoration: none;
+			background: white;
+			border: 1px solid #333;
+			border-radius: 5px;
+		}
+		.songList a:hover {
+			background: lightyellow;
+		}
+		.songList h3 {
+			margin: 0;
+		}
+
+		</style>
 	}
 }

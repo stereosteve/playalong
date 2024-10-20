@@ -7,18 +7,34 @@ templ BaseLayout() {
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<style>
-        body {
-          font-family: 'Courier New', Courier, monospace;
-          background: #efefef;
-        }
-      </style>
+				* {
+					box-sizing: border-box;
+				}
+				body {
+					margin: 0;
+					font-family: 'Courier New', Courier, monospace;
+					background: #efefef;
+				}
+				nav {
+					padding: 15px;
+					display: flex;
+					gap: 12px;
+					background: rgb(221, 35, 112);
+					color: white;
+				}
+				nav a {
+					color: white;
+				}
+      		</style>
 		</head>
 		<body>
-			<div style="padding: 10px; display: flex; gap: 5px;">
-				<a href="/">home</a>
+			<nav>
+				<a href="/"><b>JAMFU</b></a>
 				<a href="/create">create</a>
+			</nav>
+			<div style="padding: 20px">
+				{ children... }
 			</div>
-			{ children... }
 		</body>
 	</html>
 }
