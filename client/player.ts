@@ -38,10 +38,17 @@ const button = document.querySelector("#play") as HTMLButtonElement;
 button.disabled = true;
 multitrack.once("canplay", () => {
   button.disabled = false;
-  button.onclick = () => {
+  button.onclick = togglePlay;
+
+  function togglePlay() {
     multitrack.isPlaying() ? multitrack.pause() : multitrack.play();
     button.textContent = multitrack.isPlaying() ? "Pause" : "Play";
-  };
+  }
+
+  // keyboard listener
+  document.addEventListener("keyup", (e) => {
+    if (e.code === "Space") togglePlay();
+  });
 
   const mixer = document.querySelector("#mixer")!;
   song.stems.forEach((stem, idx) => {
