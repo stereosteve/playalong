@@ -9,7 +9,7 @@ templ Create() {
 			<input name="key" placeholder="Key"/>
 			<input name="bpm" placeholder="BPM"/>
 			<input type="file" name="files" accept="audio/*" multiple required/>
-			<input type="submit" value="Create"/>
+			<input type="submit" value="Create" onclick="this.form.submit(); this.disabled=true; this.value='Uploading';"/>
 		</form>
 		<style>
 		.form {
