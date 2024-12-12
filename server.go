@@ -84,6 +84,7 @@ func setupEcho() *echo.Echo {
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(middleware.Gzip())
 
 	e.GET("/", HomeHandler)
 	e.GET("/create", func(c echo.Context) error {
@@ -92,7 +93,7 @@ func setupEcho() *echo.Echo {
 	e.POST("/upload", uploadAndTranscode)
 	e.GET("/song/:id", serveSong)
 	e.GET("/status", func(ctx echo.Context) error {
-		return ctx.String(200, "OK")
+		return ctx.String(200, "A OK 1.2")
 	})
 
 	if _, err := os.Stat("client/favicon.ico"); errors.Is(err, os.ErrNotExist) {
@@ -107,6 +108,16 @@ func setupEcho() *echo.Echo {
 	}
 
 	e.Static("/uploads", "public/uploads")
+
+	// e.GET("/uploads/:name", func(c echo.Context) error {
+	// 	f, err := os.Open(path.Join("public/uploads", c.Param("name")))
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	defer f.Close()
+	// 	c.Response().Header().Set("Cache-Control", "max-age=172800")
+	// 	return c.Stream(200, "audio/mpeg", f)
+	// })
 
 	return e
 }
@@ -169,7 +180,7 @@ func uploadAndTranscode(c echo.Context) error {
 		cmd := exec.Command(
 			"ffmpeg",
 			"-i", tmpFile.Name(),
-			"-b:a", "192k",
+			// "-b:a", "192k",
 			outputFile)
 		err = cmd.Run()
 		if err != nil {

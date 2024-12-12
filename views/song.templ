@@ -8,7 +8,8 @@ templ Song(song *repo.Song) {
 			<h1>{ song.Title }</h1>
 			<em>{ song.Genre }</em>
 			<div id="container"></div>
-			<button id="play">Play</button>
+			<button id="play" class="btn">Play</button>
+			<button id="restart" class="btn">Restart</button>
 			<div id="mixer" style="padding: 10px"></div>
 			<!-- pass data to client -->
 			@templ.JSONScript("SongData", song)
@@ -21,11 +22,32 @@ templ Song(song *repo.Song) {
 		#container {
 			margin: 30px 0;
 		}
-		#play {
+		.btn {
 			border: 2px solid #333;
 			background: white;
 			padding: 20px 50px;
-			border-radius: 30px;
+			border-radius: 0px;
+		}
+
+		#mixer {
+			display: table;
+			margin-top: 20px;
+		}
+
+		.mixer-row {
+			display: table-row;
+
+		}
+
+		.mixer-row > * {
+			display: table-cell;
+			vertical-align: top;
+			margin-bottom: 10px;
+		}
+		.mixer-row b {
+			text-align: right;
+			padding-right: 10px;
+
 		}
 		</style>
 	}

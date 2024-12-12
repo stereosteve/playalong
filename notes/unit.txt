@@ -1,0 +1,16 @@
+[Unit]
+After=network.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Environment="HOST=jamz.stereosteve.com"
+ExecStart=/root/jamfu
+WorkingDirectory=/root
+User=root
+Restart=always
+RestartSec=1
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=%n

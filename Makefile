@@ -7,4 +7,6 @@ client::
 ship::
 	bun build.ts
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/jamfu-amd64
-	scp build/jamfu-amd64 steve2:jamfu
+	ssh jam -t 'systemctl stop jamfu'
+	scp build/jamfu-amd64 jam:jamfu
+	ssh jam -t 'systemctl start jamfu'

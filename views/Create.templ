@@ -4,6 +4,15 @@ templ Create() {
 	@BaseLayout() {
 		<form class="form" action="/upload" method="post" enctype="multipart/form-data">
 			<h2>New Song</h2>
+			<ul>
+				<li>Ensure all tracks are named clearly.  The filename is used for labeling tracks.</li>
+				<li>
+					Export all tracks to audio.
+					<ul>
+						<li>In Logic: <em>File > Export > All Tracks as Audio Files</em></li>
+					</ul>
+				</li>
+			</ul>
 			<input name="title" placeholder="Song Title" required/>
 			<input name="genre" placeholder="Genre" required/>
 			<input name="key" placeholder="Key"/>
@@ -13,7 +22,7 @@ templ Create() {
 		</form>
 		<style>
 		.form {
-			max-width: 400px;
+			max-width: 500px;
 			margin: 20px auto;
 			padding: 10px;
 			background: white;
@@ -31,6 +40,11 @@ templ Create() {
 			padding: 10px;
 			border-radius: 5px;
 			border-width: 1px;
+		}
+		ul {
+		}
+		li {
+			margin-bottom: 10px;
 		}
 		</style>
 	}
